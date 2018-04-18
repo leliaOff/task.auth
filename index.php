@@ -18,14 +18,28 @@ try
      * Тут будет либо ключ сессии, либо sms, что обозначает, что надо запросить смс-код у пользователя
      */
     $loginResult = $auth->login($login, $password);
+
+    if($loginResult == 'incorrect') {
+        exit('Неверный пароль');
+    }
     
+    echo 'Успешный вход<br/>';
     if($loginResult == 'sms') {
-        $key = $auth->confirmSms($code);
+        
+        echo 'Требуется подтверждение по СМС<br/>';
+        $smsResult = $auth->confirmSms($code);
+        if($smsResult == 'code incorrect') {
+            exit('Неверный код СМС');
+        }
+
+        echo 'Успешное подтверждение<br/>';
+        $key = $smsResult;
+
     } else {
         $key = $loginResult;
     }
 
-    echo $key;
+    echo 'Авторизация закончена, ваш ключ: ' . $key;
 
 }
 catch(Exception $exception)

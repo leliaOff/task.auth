@@ -37,7 +37,7 @@ class TelegramAuthStrategy implements AuthSmsStrategy
     public function confirmSms($code): string
     {
         if($code != '666') {
-            return 'incorrect';
+            return 'code incorrect';
         }
 
         return $this->key;
@@ -66,7 +66,7 @@ class VkontakteAuthStrategy implements AuthSmsStrategy
     public function confirmSms($code): string
     {
         if($code != '666') {
-            return 'incorrect';
+            return 'code incorrect';
         }
 
         return $this->key;
@@ -94,7 +94,7 @@ class FacebookAuthStrategy implements AuthSmsStrategy
     public function confirmSms($code): string
     {
         if($code != '666') {
-            return 'incorrect';
+            return 'code incorrect';
         }
 
         return $this->key;
@@ -227,12 +227,8 @@ class Auth
         
         $loginResult = $this->context->login($login, $password);
 
-        if($loginResult == 'incorrect') {
-            throw new Exception('password is incorrect');
-        }
-
         /**
-         * Тут будет либо ключ сессии, либо sms, что обозначает, что надо запросить смс-код у пользователя
+         * Тут будет либо ключ сессии, либо sms, что обозначает, что надо запросить смс-код у пользователя, либо incorrect
          */
         return $loginResult;
     }
