@@ -13,7 +13,7 @@ interface AuthStrategy
  */
 interface AuthSmsStrategy extends AuthStrategy
 {
-    public function confirmSms($key, $code): bool;
+    public function confirmSms($code): string;
 }
 
 /**
@@ -21,14 +21,26 @@ interface AuthSmsStrategy extends AuthStrategy
  */
 class TelegramAuthStrategy implements AuthSmsStrategy
 {
+    
+    private $key;
+    
     public function login($login, $password): string
     {
-        // ...
+        if($password != '12345678') {
+            return 'incorrect';
+        }
+
+        $this->key = hash('sha256', $password);
+        return 'sms';
     }
 
-    public function confirmSms($key, $code): bool
+    public function confirmSms($code): string
     {
-        // ...
+        if($code != '666') {
+            return 'incorrect';
+        }
+
+        return $this->key;
     }
     
 }
@@ -38,14 +50,26 @@ class TelegramAuthStrategy implements AuthSmsStrategy
  */
 class VkontakteAuthStrategy implements AuthSmsStrategy
 {
+    
+    private $key;
+    
     public function login($login, $password): string
     {
-        // ...
+        if($password != '12345678') {
+            return 'incorrect';
+        }
+
+        $this->key = hash('sha256', $password);
+        return 'sms';
     }
 
-    public function confirmSms($key, $code): bool
+    public function confirmSms($code): string
     {
-        // ...
+        if($code != '666') {
+            return 'incorrect';
+        }
+
+        return $this->key;
     }
 }
 
@@ -54,14 +78,26 @@ class VkontakteAuthStrategy implements AuthSmsStrategy
  */
 class FacebookAuthStrategy implements AuthSmsStrategy
 {
+    
+    private $key;
+    
     public function login($login, $password): string
     {
-        // ...
+        if($password != '12345678') {
+            return 'incorrect';
+        }
+
+        $this->key = hash('sha256', $password);
+        return 'sms';
     }
 
-    public function confirmSms($key, $code): bool
+    public function confirmSms($code): string
     {
-        // ...
+        if($code != '666') {
+            return 'incorrect';
+        }
+
+        return $this->key;
     }
 }
 
@@ -70,9 +106,17 @@ class FacebookAuthStrategy implements AuthSmsStrategy
  */
 class OdnoklassnikiAuthStrategy implements AuthStrategy
 {
+    
+    private $key;
+    
     public function login($login, $password): string
     {
-        // ...
+        if($password != '12345678') {
+            return 'incorrect';
+        }
+
+        $this->key = hash('sha256', $password);
+        return $this->key;
     }
 }
 
@@ -81,9 +125,17 @@ class OdnoklassnikiAuthStrategy implements AuthStrategy
  */
 class TwitterAuthStrategy implements AuthStrategy
 {
+    
+    private $key;
+    
     public function login($login, $password): string
     {
-        // ...
+        if($password != '12345678') {
+            return 'incorrect';
+        }
+
+        $this->key = hash('sha256', $password);
+        return $this->key;
     }
 }
 
@@ -96,12 +148,23 @@ class Context
 
     public function __construct(AuthStrategy $strategy)
     {
-        $authStrateg = $strategy;
+        $this->authStrategy = $strategy;
     }
 
+    /**
+     * Вход
+     */
     public function login($login, $password)
     {
         return $this->authStrategy->login($login, $password);
+    }
+
+    /**
+     * Проверка кода СМС
+     */
+    public function confirmSms($code)
+    {
+        return $this->authStrategy->confirmSms($code);
     }
 }
 
@@ -109,8 +172,10 @@ class Context
  * Авторизация
  */
 class Auth
-{
-
+{    
+    
+    private $context;
+    
     /**
      * Получаем данные пользователя
      */
@@ -126,7 +191,8 @@ class Auth
         if(count($users) == 0) {
             return false;
         }
-        return $users[0];
+
+        return array_shift($users);
     }
 
 
@@ -141,30 +207,46 @@ class Auth
             throw new Exception('user not found');
         }
 
-        return $user;
-
         switch($user['type']) {
             case 'telegram':
-                $context = new Context(new TelegramAuthStrategy());
+                $this->context = new Context(new TelegramAuthStrategy());
                 break;
             case 'vkontakte':
-                $context = new Context(new VkontakteAuthStrategy());
+                $this->context = new Context(new VkontakteAuthStrategy());
                 break;
             case 'facebook':
-                $context = new Context(new FacebookAuthStrategy());
+                $this->context = new Context(new FacebookAuthStrategy());
                 break;
             case 'odnoklassniki':
-                $context = new Context(new OdnoklassnikiAuthStrategy());
+                $this->context = new Context(new OdnoklassnikiAuthStrategy());
                 break;
             case 'twitter':
-                $context = new Context(new TwitterAuthStrategy());
+                $this->context = new Context(new TwitterAuthStrategy());
                 break;
         }
         
-        $loginResult = $context->login($login, $password);
-        if($loginResult == false) {
+        $loginResult = $this->context->login($login, $password);
+
+        if($loginResult == 'incorrect') {
             throw new Exception('password is incorrect');
         }
+
+        /**
+         * Тут будет либо ключ сессии, либо sms, что обозначает, что надо запросить смс-код у пользователя
+         */
+        return $loginResult;
+    }
+
+    /**
+     * Проверка кода СМС
+     */
+    public function confirmSms($code)
+    {
+        if($this->context == null) {
+            throw new Exception('you are not login');
+        }
+
+        return $this->context->confirmSms($code);
     }
 
 }
