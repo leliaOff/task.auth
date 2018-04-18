@@ -1,50 +1,95 @@
 <?php
 
+/**
+ * Интрефейс: стандартная авторизация
+ */
 interface AuthStrategy
 {
-    public function login($login, $password);
+    public function login($login, $password): string;
 }
 
-class TelegramAuthStrategy implements AuthStrategy
+/**
+ * Интрефейс: авторизация с подтверждением по СМС
+ */
+interface AuthSmsStrategy extends AuthStrategy
 {
-    public function login($login, $password)
+    public function confirmSms($key, $code): bool;
+}
+
+/**
+ * Авторизация в Телеграмм
+ */
+class TelegramAuthStrategy implements AuthSmsStrategy
+{
+    public function login($login, $password): string
+    {
+        // ...
+    }
+
+    public function confirmSms($key, $code): bool
+    {
+        // ...
+    }
+    
+}
+
+/**
+ * Авторизация в Вконтакте
+ */
+class VkontakteAuthStrategy implements AuthSmsStrategy
+{
+    public function login($login, $password): string
+    {
+        // ...
+    }
+
+    public function confirmSms($key, $code): bool
     {
         // ...
     }
 }
 
-class VkontakteAuthStrategy implements AuthStrategy
+/**
+ * Авторизация в Фейсбук
+ */
+class FacebookAuthStrategy implements AuthSmsStrategy
 {
-    public function login($login, $password)
+    public function login($login, $password): string
+    {
+        // ...
+    }
+
+    public function confirmSms($key, $code): bool
     {
         // ...
     }
 }
 
-class FacebookAuthStrategy implements AuthStrategy
-{
-    public function login($login, $password)
-    {
-        // ...
-    }
-}
-
+/**
+ * Авторизация в Одноклассники
+ */
 class OdnoklassnikiAuthStrategy implements AuthStrategy
 {
-    public function login($login, $password)
+    public function login($login, $password): string
     {
         // ...
     }
 }
 
+/**
+ * Авторизация в Твитер
+ */
 class TwitterAuthStrategy implements AuthStrategy
 {
-    public function login($login, $password)
+    public function login($login, $password): string
     {
         // ...
     }
 }
 
+/**
+ * Работа со стратегиями авторизации
+ */
 class Context
 {
     private $authStrategy;
@@ -60,9 +105,15 @@ class Context
     }
 }
 
+/**
+ * Авторизация
+ */
 class Auth
 {
 
+    /**
+     * Получаем данные пользователя
+     */
     private function getUserData($login)
     {
         require_once "data.php";
@@ -78,6 +129,10 @@ class Auth
         return $users[0];
     }
 
+
+    /**
+     * Поптыка входа в систему
+     */
     public function login($login, $password)
     {
         
